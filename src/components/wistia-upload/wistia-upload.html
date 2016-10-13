@@ -1,36 +1,26 @@
-<div class="container-fluid">
+<div class="container-fluid wistia-upload">
 	<form id="fileupload" action="" method="POST" enctype="multipart/form-data">
-	<div class="row fileupload-buttonbar">
+	<div class="row fileupload-buttonbar" ng-show='vm.showUploader'>
 		<div class="col-lg-12">
-			<div class="alert alert-danger alert-dismissible" role="alert" ng-show="displayFailureMessage">
+			<div class="alert alert-danger alert-dismissible" role="alert" ng-show="vm.displayFailureMessage">
 			  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 			  <strong>Sorry!</strong> {{failureMessage ? failureMessage : 'You can only upload videos.'}}
 			</div>
-		    <div class="col-lg-2">
-		        <span class="btn btn-success fileinput-button" ng-hide="isUploading || isProcessing" ng-class="{disabled: btnDisabled}">
-		            <i class="glyphicon glyphicon-plus"></i>
-		            <span>Upload video</span>
-		            <input type="file" name="file">
-		        </span>
+
+				<div class="col-lg-2">
+					<span class="btn btn-default btn-file" ng-class="{disabled: vm.btnDisabled}">
+					    Browse <input type="file">
+					</span>
 		    </div>
-		    <div class="col-lg-10">
-		    	<div class="fade" ng-class="{in: isUploading}">
-			        <div class="progress progress-striped active">
-			        	<div class="progress-bar progress-bar-success" style="width: {{progressPercentual + '%'}}"></div>
-			        </div>
-			        <div class="progress-extended"></div>
-			    </div>
-		    </div>
-		</div>
-		<div class="col-lg-12" ng-show="isProcessing">
-	       	<div class="progress">
-			  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
-			    <span>Wait, processing video...</span>
-			  </div>
-			</div>
 		</div>
 	</div>
 	</form>
+	<!-- start processing bar -->
+	<div class="col-lg-12 fade" ng-class="{in: (vm.isUploading || vm.isProcessing)}">
+		<progress-bar striped='true' style={{vm.progressBarStyle}} progress='vm.progressPercentual' message={{vm.progressBarMessage}} />
+	</div>
 
-  <iframe ng-src="{{url}}" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" width="640" height="360" ng-show="url != ''"></iframe>
+	<div ng-if='vm.uploadedVideo'>
+		<wistia-player video='vm.uploadedVideo' on-delete='vm.deleteVideo()' />
+	</div>
 </div>

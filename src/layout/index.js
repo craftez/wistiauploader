@@ -8,12 +8,10 @@ import angular from 'angular';
 import AppComponent from './app.component';
 
 import ComponentsModule from '../components';
-import CommonModule from '../common';
 
 const App = angular
 	.module('main', [
-	  ComponentsModule.name,
-	  CommonModule.name
+	  ComponentsModule.name
 ])
 	.component('app', AppComponent);
 

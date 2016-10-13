@@ -1,0 +1,6 @@
+<div class="progress" ng-class="{'progress-striped': $ctrl.striped}">
+  <div class="progress-bar text-center" ng-class="{'progress-bar-success': $ctrl.style === 'success'}" style="width: {{$ctrl.progress + '%'}}">
+    <span ng-bind='$ctrl.message'></span>
+  </div>
+</div>
+<div class="progress-extended"></div>

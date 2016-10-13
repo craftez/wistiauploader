@@ -8,6 +8,7 @@ const wistiaUploadDirective = () => {
     template,
     replace: true,
     controller,
+    controllerAs: 'vm',
     link: function(scope, element, attrs, controller) {
       $(element.find('#fileupload')).fileupload(controller.uploadOptions);
     },

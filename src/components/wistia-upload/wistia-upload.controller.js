@@ -1,21 +1,25 @@
 class WistiaController {
-  constructor($timeout, $scope, $sce, $http, wistiaConst) {
+  constructor($timeout, $scope, $log, $http, wistiaConst, WistiaUploadService) {
     'ngInject';
     this.$timeout = $timeout;
-    this.$sce = $sce;
+    this.$log = $log;
     this.$http = $http;
     this.$scope = $scope;
     this.wistiaConst = wistiaConst;
-
+    this.WistiaUploadService = WistiaUploadService;
     this.onInit();
   }
 
   onInit() {
+    this.showUploader = true;
     this.isUploading = false;
     this.isProcessing = false;
     this.displayFailureMessage = false;
+
+    // progress bar component settings
     this.progressPercentual = 0;
-    this.progressBarActive = false;
+    this.progressBarStyle = '';
+    this.progressBarMessage = '';
 
     this.uploadOptions = {
       url: this.wistiaConst.uploadUrl,
@@ -23,9 +27,9 @@ class WistiaController {
       formData: [{
         name: 'api_password',
         value: this.wistiaConst.apiPassword
-        }, {
-          name: 'project_id',
-          value: '5a04w3kf5k'
+      }, {
+        name: 'project_id',
+        value: this.wistiaConst.projectId
       }],
       processQueue: [{
         action: 'validate',
@@ -33,45 +37,44 @@ class WistiaController {
         acceptFileTypes: '@'
       }],
       add: (e, data) => { // called when a file is picked
+
         const file = data.files[0];
-        debugger;
         this.displayFailureMessage = false;
 
         if (file.type.indexOf('video') === -1) {
           this.displayFailureMessage = true;
-          // this.$scope.$apply();
+          this.$scope.$apply();
           return;
         }
-
+        this.showUploader = false;
+        this.progressBarStyle = 'success';
         this.isUploading = true;
         data.submit();
         this.$scope.$apply();
       },
       done: (e, data) => { // called when the uploading is done
+
         this.isUploading = false;
-        debugger;
+        this.progressBarStyle = '';
         if (data && data.result) {
           this.wistiaVideoHash = data.result.hashed_id;
           // retrive the video to show in the embed area
           this.retrieveVideoHashWhenReady();
-
         } else {
           this.failureMessage = 'Something went wrong, we couldn\'t upload the video';
           this.displayFailureMessage = true;
         }
-
         this.$scope.$apply();
       },
       fail: () => { // called when the uploading fails
-        debugger;
+
         this.isUploading = false;
         this.failureMessage = 'Something went wrong.';
         this.displayFailureMessage = true;
-
         this.$scope.$apply();
       },
       progressall: (e, data) => {
-        debugger;
+
         this.progressPercentual = parseInt(data.loaded / data.total * 100, 10);
         this.$scope.$apply();
       }
@@ -79,26 +82,20 @@ class WistiaController {
   }
 
   retrieveVideoHashWhenReady() {
-    const requestConfig = {
-      params: {
-        hashed_id: this.wistiaVideoHash,
-        api_password: this.wistiaConst.apiPassword
-      }
-    };
-
+    const defaultErrorMessage = 'Something went wrong';
     this.isProcessing = true;
-
-    this.$http.get(this.wistiaConst.mediasUrl, requestConfig)
+    this.progressBarMessage = 'Wait, processing...';
+    this.WistiaUploadService.getVideo(this.wistiaVideoHash)
         .then(response => {
           this.isUploading = false;
-
           if (response.data && response.data[0]) {
             const wistiaInfo = response.data[0];
                 // If the video is ready, I can show it.
             if (wistiaInfo.status === 'ready') {
-              this.url = this.$sce.trustAsResourceUrl('http://fast.wistia.net/embed/iframe/' + wistiaInfo.hashed_id);
+              this.uploadedVideo = wistiaInfo;
               this.isProcessing = false;
-
+              this.progressPercentual = 0;
+              this.progressBarMessage = '';
             } else if (wistiaInfo.status === 'failed') { // if the status is 'failed', stop the requests, something went wrong
               this.failureMessage = 'Something went wrong while processing the video.';
               this.displayFailureMessage = true;
@@ -110,18 +107,23 @@ class WistiaController {
             }
 
           } else {
-            this.failureMessage = 'Something went wrong.';
+            this.failureMessage = defaultErrorMessage;
             this.displayFailureMessage = true;
-
             this.isProcessing = false;
           }
         }, err => {
-          this.failureMessage = 'Something went wrong.';
+          this.failureMessage = defaultErrorMessage;
           this.displayFailureMessage = true;
           this.isUploading = false;
           this.isProcessing = false;
         });
   }
+
+  deleteVideo() {
+    this.uploadedVideo = null;
+    this.showUploader = true;
+  }
+
 }
 
 export default WistiaController;

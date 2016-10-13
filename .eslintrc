@@ -23,7 +23,10 @@
       2,
       "$inject"
     ],
-    "angular/no-service-method": 0
+    "angular/no-service-method": 0,
+    "angular/module-setter": 0,
+    "angular/module-getter": 0,
+    "angular/document-service": 0
   },
   "parser": "babel-eslint",
   "env": {
